@@ -1,0 +1,34 @@
+---
+- name: RHEL Edge FDO | Setup manufacturing server
+  hosts: localhost
+  become: true
+  tasks:
+    - name: RHEL Edge FDO | Generate FDO keys
+      ansible.builtin.import_role:
+        name: community.fdo.generate_keys_and_certificates
+      vars:
+        generated_certs_dir: "{{ playbook_dir }}/keys/"
+
+- name: RHEL Edge FDO | Deploy the manufacturing server
+  hosts: manufacturing_server
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: RHEL Edge FDO | Set up the manufacturing server
+      ansible.builtin.import_role:
+         name: community.fdo.setup_manufacturing_server
+      vars:
+        manufacturing_server_generate_keys_and_certificates: false
+
+    - name: Copy manufacturing server certificates
+      ansible.builtin.import_role:
+        name:  community.fdo.copy_manufacturing_server_certs_to_manufacturing_server
+      vars:
+        localhost_manufacturing_server_certs_dir: "{{ playbook_dir }}/keys"
+
+    - name: Configure the manufacturing server
+      ansible.builtin.include_role:
+        name:  community.fdo.configure_manufacturing_server
+      vars:
+        manufacturing_server_rendezvous_info_ip_address: "{{ rendezvous_server_ip_address }}"
