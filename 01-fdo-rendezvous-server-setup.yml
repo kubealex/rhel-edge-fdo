@@ -1,0 +1,22 @@
+- name: RHEL Edge FDO | Setup rendezvous server
+  hosts: rendezvous_server
+  become: true
+
+  tasks:
+    - name: RHEL Edge FDO | Set up the rendezvous sever
+      ansible.builtin.import_role:
+        name: community.fdo.setup_rendezvous_server
+      vars:
+        copy_manufacturer_certs: false
+
+    - name: RHEL Edge FDO | Copy rendezvous server certificates
+      ansible.builtin.import_role:
+        name: community.fdo.copy_manufacturing_server_certs_to_rendezvous_server
+      vars:
+        localhost_manufacturing_server_certs_dir: "{{ playbook_dir }}/keys"
+
+    - name: RHEL Edge FDO | Configure the rendezvous server
+      ansible.builtin.import_role:
+        - name: community.fdo.configure_rendezvous_server
+      vars:
+        update_cert: false

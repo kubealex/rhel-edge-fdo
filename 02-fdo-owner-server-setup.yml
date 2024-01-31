@@ -1,0 +1,42 @@
+- name: Deploy the owner server
+  hosts: owner_server
+  become: true
+
+  tasks:
+    - name: Set up the owner server
+      ansible.builtin.import_role:
+        name: community.fdo.setup_owner_server
+      vars:
+        copy_manufacturer_certs: false
+
+    - name: Copy manufacturing certificates to the owner server
+      ansible.builtin.import_role:
+        name: community.fdo.copy_manufacturing_server_certs_to_owner_server
+      vars:
+        localhost_manufacturing_server_certs_dir: "{{ playbook_dir }}/keys"
+
+    - name: Configure the owner server
+      ansible.builtin.import_role:
+        name: community.fdo.configure_owner_server
+      vars:
+        update_keys_certs: false
+        owner_onboarding_server_owner_addresses_ip_address: "{{ owner_server_ip_address }}"
+        serviceinfo_api_server_config: |-
+          initial_user:
+            username: admin
+            password: "{{ fdo_admin_password }}"
+            sshkeys:
+            - "{{ fdo_admin_ssh_key }}"
+          commands:
+          - command: touch
+            args:
+            - /var/tmp/fdo-onboard-success
+            return_stdout: true
+            return_stderr: true
+          diskencryption_clevis:
+          - disk_label: /dev/vda4
+            binding:
+              pin: tpm2
+              config: "{}"
+            reencrypt: true
+          additional_serviceinfo: ~

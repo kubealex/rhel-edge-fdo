@@ -21,13 +21,13 @@
       vars:
         manufacturing_server_generate_keys_and_certificates: false
 
-    - name: Copy manufacturing server certificates
+    - name: RHEL Edge FDO | Copy manufacturing server certificates
       ansible.builtin.import_role:
         name:  community.fdo.copy_manufacturing_server_certs_to_manufacturing_server
       vars:
         localhost_manufacturing_server_certs_dir: "{{ playbook_dir }}/keys"
 
-    - name: Configure the manufacturing server
+    - name: RHEL Edge FDO | Configure the manufacturing server
       ansible.builtin.include_role:
         name:  community.fdo.configure_manufacturing_server
       vars:
